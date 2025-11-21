@@ -1,0 +1,56 @@
+# ====================================================================
+# PRODUCTION DOCKERFILE
+# Use this for production deployments
+# Build: docker build -f Dockerfile.prod -t my-app:prod .
+# ====================================================================
+
+FROM php:8.2-fpm
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpq-dev \
+    zip \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install PHP extensions
+RUN docker-php-ext-install pdo pdo_pgsql opcache
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www
+
+# ====================================================================
+# PRODUCTION: Copy code into image (baked in!)
+# ====================================================================
+
+# Copy composer files first (for better caching)
+COPY composer.json composer.lock ./
+
+# Install dependencies (production, optimized)
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --no-progress \
+    --prefer-dist
+
+# Copy all application code
+COPY . .
+
+# Set proper permissions
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 755 /var/www
+
+# Clear cache and warmup (production)
+RUN php bin/console cache:clear --env=prod --no-debug \
+    && php bin/console cache:warmup --env=prod --no-debug
+
+EXPOSE 8000
+
+# Production-ready command
+CMD ["php", "-S", "0.0.0.0:8000", "-t", "public"]

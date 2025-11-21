@@ -1,0 +1,21 @@
+api_platform:
+  title: Task Management API
+  version: 1.0.0
+  description: "API for Task Management System"
+  defaults:
+    stateless: true
+    cache_headers:
+      vary: ["Content-Type", "Authorization", "Origin"]
+    pagination_enabled: true
+    pagination_items_per_page: 10
+    pagination_maximum_items_per_page: 30
+  formats:
+    jsonld: ["application/ld+json"]
+    json: ["application/json"]
+    html: ["text/html"]
+  swagger:
+    versions: [3]
+    api_keys:
+      apiKey:
+        name: Authorization
+        type: header

@@ -17,11 +17,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www
 
-# Copy project files
-COPY . .
+# ====================================================================
+# DEVELOPMENT SETUP: No COPY here!
+# Code is mounted via volume in compose.yaml (.:/var/www)
+# This allows real-time code updates without rebuilding! 🚀
+# ====================================================================
 
-# Install Symfony dependencies
-RUN composer install
+# Note: composer install will run from mounted code via volume
+# Dependencies will be installed when container starts
 
 EXPOSE 8000
 
