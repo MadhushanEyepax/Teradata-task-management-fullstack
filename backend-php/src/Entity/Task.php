@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Patch;
 use ApiPlatform\Metadata\Delete;
 use App\Repository\TaskRepository;
 use Doctrine\Common\Collections\ArrayCollection;
@@ -28,6 +29,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Get(),
         new Post(),
         new Put(),
+        new Patch(),
         new Delete()
     ],
     normalizationContext: ['groups' => ['task:read']],
@@ -99,7 +101,17 @@ class Task
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->createdAt = new \DateTime();
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTime();
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function ensureCreatedAtNotNull(): void
+    {
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTime();
+        }
     }
 
     public function getId(): ?int

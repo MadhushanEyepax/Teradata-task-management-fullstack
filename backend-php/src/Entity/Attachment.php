@@ -46,11 +46,11 @@ class Attachment
     #[Groups(['attachment:read', 'attachment:write'])]
     private ?string $filePath = null;
 
-    #[ORM\Column(type: Types::STRING, length: 100)]
+    #[ORM\Column(type: Types::STRING, length: 100, nullable: true)]
     #[Groups(['attachment:read', 'attachment:write', 'task:read'])]
     private ?string $mimeType = null;
 
-    #[ORM\Column(type: Types::INTEGER)]
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
     #[Groups(['attachment:read', 'attachment:write', 'task:read'])]
     private ?int $fileSize = null;
 

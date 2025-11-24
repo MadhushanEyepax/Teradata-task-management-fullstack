@@ -10,6 +10,7 @@ use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use App\Repository\UserRepository;
 use App\State\UserTasksProvider;
+use App\State\UserProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -24,7 +25,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new GetCollection(),
         new Get(),
-        new Post(),
+        new Post(
+            validationContext: ['groups' => ['Default', 'user:create']],
+            denormalizationContext: ['groups' => ['user:write', 'user:create']]
+        ),
         new Put(),
         new Delete(),
         new Get(
@@ -35,6 +39,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
     ],
     normalizationContext: ['groups' => ['user:read']],
     denormalizationContext: ['groups' => ['user:write']],
+    processor: UserProcessor::class,
     paginationEnabled: true,
     paginationItemsPerPage: 10
 )]
@@ -62,8 +67,8 @@ class User
     private ?string $email = null;
 
     #[ORM\Column(type: Types::STRING, length: 255)]
-    #[Assert\NotBlank(message: 'Password is required')]
-    #[Groups(['user:write'])]
+    #[Assert\NotBlank(message: 'Password is required', groups: ['user:create'])]
+    #[Groups(['user:create'])]
     private ?string $password = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
@@ -124,10 +129,9 @@ class User
         return $this->password;
     }
 
-    public function setPassword(string $password): static
+    public function setPassword(?string $password): static
     {
         $this->password = $password;
-
         return $this;
     }
 

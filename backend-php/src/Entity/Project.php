@@ -9,6 +9,8 @@ use ApiPlatform\Metadata\Post;
 use ApiPlatform\Metadata\Put;
 use ApiPlatform\Metadata\Delete;
 use App\Repository\ProjectRepository;
+use App\State\ProjectTasksProvider;
+use App\State\ProjectProcessor;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
@@ -28,11 +30,13 @@ use Symfony\Component\Serializer\Annotation\Groups;
         new Delete(),
         new Get(
             uriTemplate: '/projects/{id}/tasks',
-            normalizationContext: ['groups' => ['project:read', 'task:read']]
+            normalizationContext: ['groups' => ['project:read', 'task:read']],
+            provider: ProjectTasksProvider::class
         )
     ],
     normalizationContext: ['groups' => ['project:read']],
     denormalizationContext: ['groups' => ['project:write']],
+    processor: ProjectProcessor::class,
     paginationEnabled: true,
     paginationItemsPerPage: 20
 )]
@@ -95,7 +99,19 @@ class Project
     #[ORM\PrePersist]
     public function setCreatedAtValue(): void
     {
-        $this->createdAt = new \DateTime();
+        if ($this->createdAt === null) {
+            $this->createdAt = new \DateTime();
+        }
+    }
+
+    #[ORM\PreUpdate]
+    public function preserveCreatedAt(): void
+    {
+        // Ensure created_at is never null during updates
+        if ($this->createdAt === null) {
+            // This should not happen, but if it does, don't update it
+            // Doctrine will preserve the database value
+        }
     }
 
     public function getId(): ?int

@@ -9,22 +9,26 @@
  * 4. Easy error handling in one place
  */
 
-// Base URL for the API - Change this if your backend runs on a different port
-const API_BASE_URL = "http://localhost:8000/api";
+import { API_BASE_URL, STORAGE_KEYS } from "../utils/constants";
 
 /**
- * Generic fetch wrapper with error handling
+ * Generic fetch wrapper with error handling and authentication
  * This function handles common tasks like:
  * - Setting headers
+ * - Adding authentication token
  * - Parsing JSON responses
  * - Error handling
  */
 const fetchAPI = async (endpoint, options = {}) => {
   try {
+    // Get token from localStorage for authenticated requests
+    const token = localStorage.getItem(STORAGE_KEYS.TOKEN);
+
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
       ...options,
@@ -43,6 +47,50 @@ const fetchAPI = async (endpoint, options = {}) => {
     console.error("API Error:", error);
     throw error;
   }
+};
+
+/**
+ * Authentication API Methods
+ */
+export const authAPI = {
+  /**
+   * Login user
+   * @param {string} email - User email
+   * @param {string} password - User password
+   * @returns {Promise} - Token and user data
+   */
+  login: async (email, password) => {
+    // TODO: Replace with actual Symfony login endpoint
+    // For now, return mock data
+    return {
+      token: "mock-jwt-token",
+      user: {
+        user_id: 1,
+        username: email.split("@")[0],
+        email: email,
+      },
+    };
+  },
+
+  /**
+   * Register new user
+   * @param {Object} userData - User registration data
+   * @returns {Promise} - Created user
+   */
+  register: async (userData) => {
+    return fetchAPI("/users", {
+      method: "POST",
+      body: JSON.stringify(userData),
+    });
+  },
+
+  /**
+   * Logout user (clear local storage)
+   */
+  logout: () => {
+    localStorage.removeItem(STORAGE_KEYS.TOKEN);
+    localStorage.removeItem(STORAGE_KEYS.USER);
+  },
 };
 
 /**
@@ -178,6 +226,7 @@ export const commentAPI = {
 };
 
 export default {
+  authAPI,
   taskAPI,
   projectAPI,
   userAPI,
