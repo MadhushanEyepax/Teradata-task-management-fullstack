@@ -75,8 +75,8 @@ const TaskFilters = ({
           >
             <option value="">All Projects</option>
             {projects.map((project) => (
-              <option key={project.project_id} value={project.project_id}>
-                {project.project_name}
+              <option key={project.id} value={project.id}>
+                {project.name}
               </option>
             ))}
           </select>

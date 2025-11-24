@@ -37,8 +37,9 @@ const fetchAPI = async (endpoint, options = {}) => {
     // Check if response is ok (status 200-299)
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.error("API Error Details:", errorData);
       throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
+        errorData.message || errorData["hydra:description"] || `HTTP error! status: ${response.status}`
       );
     }
 

@@ -79,19 +79,30 @@ const TaskForm = ({
     try {
       const submitData = {
         title: formData.title,
-        description: formData.description,
         status: formData.status,
         priority: formData.priority,
-        due_date: formData.due_date || null,
       };
 
-      // Add IRI references for Symfony API Platform
-      if (formData.assigned_to) {
-        submitData.assigned_to = formData.assigned_to;
+      // Only add description if it has a value
+      if (formData.description && formData.description.trim() !== "") {
+        submitData.description = formData.description;
       }
-      if (formData.project_id) {
+
+      // Only add dueDate if it has a value
+      if (formData.due_date) {
+        submitData.dueDate = formData.due_date;
+      }
+
+      // Add IRI references for Symfony API Platform only if they have values
+      if (formData.assigned_to && formData.assigned_to.trim() !== "") {
+        submitData.assignedTo = formData.assigned_to;
+      }
+      if (formData.project_id && formData.project_id.trim() !== "") {
         submitData.project = formData.project_id;
       }
+
+      console.log("FormData before submit:", formData);
+      console.log("SubmitData being sent:", submitData);
 
       await onSubmit(submitData);
     } catch (err) {
@@ -191,15 +202,23 @@ const TaskForm = ({
           <select
             name="assigned_to"
             value={formData.assigned_to}
-            onChange={handleChange}
+            onChange={(e) => {
+              console.log("User selected - value:", e.target.value);
+              console.log("Users array:", users);
+              handleChange(e);
+            }}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
           >
             <option value="">Select user...</option>
-            {users.map((user) => (
-              <option key={user.user_id} value={user["@id"]}>
-                {user.username}
-              </option>
-            ))}
+            {users.map((user) => {
+              console.log("Rendering user option:", user);
+              const userIri = user["@id"] || `/api/users/${user.user_id}`;
+              return (
+                <option key={user.user_id} value={userIri}>
+                  {user.username}
+                </option>
+              );
+            })}
           </select>
         </div>
 
@@ -215,18 +234,15 @@ const TaskForm = ({
           >
             <option value="">Select project...</option>
             {projects.map((project) => (
-              <option key={project.project_id} value={project["@id"]}>
-                {project.project_name}
+              <option key={project.id} value={project["@id"]}>
+                {project.name}
               </option>
             ))}
           </select>
         </div>
       </div>
 
-      <div className="flex gap-3 pt-4 border-t border-gray-200">
-        <Button type="submit" variant="primary" loading={loading}>
-          {task ? "Update Task" : "Create Task"}
-        </Button>
+      <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
         <Button
           type="button"
           variant="outline"
@@ -234,6 +250,9 @@ const TaskForm = ({
           disabled={loading}
         >
           Cancel
+        </Button>
+        <Button type="submit" variant="primary" loading={loading}>
+          {task ? "Update Task" : "Create Task"}
         </Button>
       </div>
     </form>

@@ -30,17 +30,17 @@ const TaskModal = ({ task, isOpen, onClose, onEdit, onDelete }) => {
       title={task.title}
       size="large"
       footer={
-        <div className="flex gap-2">
-          <Button variant="primary" onClick={() => onEdit && onEdit(task)}>
-            Edit Task
+        <>
+          <Button variant="outline" onClick={onClose}>
+            Close
           </Button>
           <Button variant="danger" onClick={() => onDelete && onDelete(task)}>
             Delete Task
           </Button>
-          <Button variant="outline" onClick={onClose}>
-            Close
+          <Button variant="primary" onClick={() => onEdit && onEdit(task)}>
+            Edit Task
           </Button>
-        </div>
+        </>
       }
     >
       <div className="space-y-6">
@@ -123,7 +123,7 @@ const TaskModal = ({ task, isOpen, onClose, onEdit, onDelete }) => {
               Project
             </h4>
             <p className="text-gray-600">
-              {task.project?.project_name || "No project"}
+              {task.project?.name || "No project"}
             </p>
           </div>
         </div>

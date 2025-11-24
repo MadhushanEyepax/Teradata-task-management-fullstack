@@ -62,25 +62,40 @@ class Task
 
     #[ORM\Column(type: Types::STRING, length: 20)]
     #[Assert\Choice(
-        choices: ['pending', 'completed'],
-        message: 'Status must be either pending or completed'
+        choices: ['pending', 'in_progress', 'completed'],
+        message: 'Status must be pending, in_progress, or completed'
     )]
     #[Groups(['task:read', 'task:write'])]
     private string $status = 'pending';
+
+    #[ORM\Column(type: Types::STRING, length: 20, nullable: true)]
+    #[Assert\Choice(
+        choices: ['low', 'medium', 'high', 'urgent'],
+        message: 'Priority must be low, medium, high, or urgent'
+    )]
+    #[Groups(['task:read', 'task:write'])]
+    private ?string $priority = 'medium';
+
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[Groups(['task:read', 'task:write'])]
+    private ?\DateTimeInterface $dueDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     #[Groups(['task:read'])]
     private ?\DateTimeInterface $createdAt = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'assignedTasks')]
-    #[ORM\JoinColumn(name: 'assigned_to', referencedColumnName: 'user_id', nullable: false)]
-    #[Assert\NotNull(message: 'Assigned user is required')]
+    #[ORM\JoinColumn(name: 'assigned_to', referencedColumnName: 'user_id', nullable: true)]
     #[Groups(['task:read', 'task:write'])]
     private ?User $assignedTo = null;
 
+    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\JoinColumn(name: 'created_by', referencedColumnName: 'user_id', nullable: true)]
+    #[Groups(['task:read'])]
+    private ?User $createdBy = null;
+
     #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'tasks')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Assert\NotNull(message: 'Project is required')]
+    #[ORM\JoinColumn(nullable: true)]
     #[Groups(['task:read', 'task:write'])]
     private ?Project $project = null;
 
@@ -155,6 +170,28 @@ class Task
         return $this;
     }
 
+    public function getPriority(): ?string
+    {
+        return $this->priority;
+    }
+
+    public function setPriority(?string $priority): static
+    {
+        $this->priority = $priority;
+        return $this;
+    }
+
+    public function getDueDate(): ?\DateTimeInterface
+    {
+        return $this->dueDate;
+    }
+
+    public function setDueDate(?\DateTimeInterface $dueDate): static
+    {
+        $this->dueDate = $dueDate;
+        return $this;
+    }
+
     public function getCreatedAt(): ?\DateTimeInterface
     {
         return $this->createdAt;
@@ -175,6 +212,17 @@ class Task
     public function setAssignedTo(?User $assignedTo): static
     {
         $this->assignedTo = $assignedTo;
+        return $this;
+    }
+
+    public function getCreatedBy(): ?User
+    {
+        return $this->createdBy;
+    }
+
+    public function setCreatedBy(?User $createdBy): static
+    {
+        $this->createdBy = $createdBy;
         return $this;
     }
 

@@ -60,7 +60,7 @@ const Tasks = () => {
     // Project filter
     if (filters.project) {
       result = result.filter(
-        (task) => task.project?.project_id === parseInt(filters.project)
+        (task) => task.project?.id === parseInt(filters.project)
       );
     }
 
